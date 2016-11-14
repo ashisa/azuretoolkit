@@ -12,7 +12,7 @@ subnetprefix="10.0.0.0/24"
 
 datetime=`date +%m%_d`
 
-echo "Registering Microsoft.Network and Microsoft.Network providers with the target subscription..."
+echo "Registering Microsoft.Network and Microsoft.Compute providers with the target subscription..."
 azure provider register Microsoft.Network -s ${targetsub} --json
 azure provider register Microsoft.Compute -s ${targetsub} --json
 
@@ -52,7 +52,7 @@ targetvhd=`echo ${sourcevhd/${sourcevm}/${targetvm}}`
 echo "Creating target resources..."
 echo "Creating target resource group ${targetrg}..."
 status=`azure group list --subscription ${targetsub} --json | jq -r ' .[] | select(.name == "${targetrg}").name'`
-if [ \"${targetrg}\" == \"${status}\" ]
+if [ \"${targetrg}\" != \"${status}\" ]
 then
    azure group create ${targetrg} ${targetlocation} --subscription ${targetsub}
    if [ "$?" == "1" ]
@@ -95,7 +95,6 @@ fi
 
 #start copying the source blob to target storage account
 echo "Starting the copy operation..."
-date
 azure storage blob copy start --source-container ${sourcecnt} --source-blob ${sourcevhd}  -c ${sourceconnstr} --dest-connection-string ${targetconnstr} --dest-container ${targetcnt} --dest-blob ${targetvhd}
 if [ "$?" == "1" ]
 then
@@ -121,7 +120,6 @@ done
 
 #time to build a vm from the VHD
 echo .
-date
 echo "Creating VM based on the VHD now..."
 azure vm create ${targetrg} ${targetvm} ${targetlocation} ${vmos} -o ${targetsa} -d https://${targetsa}.blob.core.windows.net/${targetcnt}/${targetvhd} -f ${targetvm}nic -F ${targetrg}vnet -P ${vnetprefix} -j ${targetrg}subnet -k ${subnetprefix} -r ${targetrg}avset -z ${vmsize} -i ${targetvm}ip -w ${targetvm}${datetime} -u usera -p password@${datetime} -s ${targetsub}
 
