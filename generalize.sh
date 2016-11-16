@@ -1,5 +1,6 @@
 #!/bin/bash
 
 echo "deprovisioning the azure agent..."
-(sleep 10; sudo /usr/sbin/waagent -deprovision -force; sudo shutdown -h) &:
+echo 'sudo waagent -deprovision+user -force; sudo shutdown -h now' >/tmp/deprovision.sh
+chmod a+x /tmp/deprovision.sh
 echo "deprovisioning over. VM ready to generalize and capture."
