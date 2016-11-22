@@ -6,6 +6,7 @@ The toolkit consists of the following scripts -\
 
 1. **vhdcopy.sh** - vhdcopy.sh a bash shell script to copy VHD files from one subscription to another or in same subscription in a different stora account.
 2. **vmcopy.sh** - vmcopy.sh is based on the vhdcopy.sh but does a lot more than that. you can use vmcopy.sh to copy VMs from one subscription to another, one region to another, change the vnets/subnets among others.
+3. **vmalerts.sh** - vmalerts.sh helps you set up alerts for all VMs under the current subscription to send out an email when CPU or memory consumption goes beyond the threshold percentages.
 
 #Prerequisites
 + Install [**Azure CLI**] (https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/) and the awesome command-line JSON processor [**jq**] (https://stedolan.github.io/jq/)
@@ -105,4 +106,29 @@ This syntax will create a clone of MyVM0 named **NewVM0** in a resource group ca
 
 The script also has hardcoded values for Virtual Network and Subnet. If you just wish to change VNET or Subnets of your VMs, you can edit the script to have the desired ranges and run the command to move your VMs to a new VNET/Subnet.
 
-**Disclaimer**: This script is provided as is and suitability for any purpose is not guaranteed - please test it thoroughly and modify as per your requirements.
+#vmalerts.sh
+
+The vmalerts.sh needs the following parameters -
++ email ID to send alerts to
++ Metric type - cpu or memory
++ Threshold value in percentage
+
+You also need to have added the Azure accounts in question by running the **azure login** command -
+
+```bash
+azure account login
+```
+
+Now, run the script with the following syntax to send alerts when the CPU is above 75% for last 15 minutes -
+
+```bash
+./vmalerts.sh <email id> cpu 75
+```
+
+This syntax sets up alerts to send emails when the memory usage is above 70% for last 15 minutes -
+
+```bash
+./vmalerts.sh <email id> memory 70
+```
+
+**Disclaimer**: The scripts is provided as is and suitability for any purpose is not guaranteed - please test it thoroughly and modify as per your requirements.
