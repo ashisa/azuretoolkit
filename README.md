@@ -108,7 +108,7 @@ The script also has hardcoded values for Virtual Network and Subnet. If you just
 
 #vmalerts.sh
 
-The vmalerts.sh needs the following parameters -
+The vmalerts.sh script needs the following parameters -
 + email ID to send alerts to
 + Metric type - cpu or memory
 + Threshold value in percentage
@@ -129,6 +129,12 @@ This syntax sets up alerts to send emails when the memory usage is above 70% for
 
 ```bash
 ./vmalerts.sh <email id> memory 70
+```
+
+Note: If you wish to use this script with Windows VM to set up memory usage alerts please change line no. 17 to the following -
+
+```bash
+metricname="\Memory\% Committed Bytes In Use"
 ```
 
 **Disclaimer**: The scripts is provided as is and suitability for any purpose is not guaranteed - please test it thoroughly and modify as per your requirements.
