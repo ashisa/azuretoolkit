@@ -137,4 +137,6 @@ Note: If you wish to use this script with Windows VM to set up memory usage aler
 metricname="\Memory\% Committed Bytes In Use"
 ```
 
+The script, at the moment, looks for all the VMs and sets up alerts for them. Work to specify individual resource groups and/or VMs is going on - as time permits, I'll add those options.
+
 **Disclaimer**: The scripts is provided as is and suitability for any purpose is not guaranteed - please test it thoroughly and modify as per your requirements.
