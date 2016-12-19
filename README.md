@@ -2,7 +2,7 @@
 
 Azure Toolkit is a collection of scripts that I have developed to make things easier for a variety of scenarios.
 
-The toolkit consists of the following scripts -\
+The toolkit consists of the following scripts -
 
 1. **vhdcopy.sh** - vhdcopy.sh a bash shell script to copy VHD files from one subscription to another or in same subscription in a different stora account.
 2. **vmcopy.sh** - vmcopy.sh is based on the vhdcopy.sh but does a lot more than that. you can use vmcopy.sh to copy VMs from one subscription to another, one region to another, move it to a new availability set, change the vnets/subnets among others.
