@@ -5,8 +5,9 @@ Azure Toolkit is a collection of scripts that I have developed to make things ea
 The toolkit consists of the following scripts -\
 
 1. **vhdcopy.sh** - vhdcopy.sh a bash shell script to copy VHD files from one subscription to another or in same subscription in a different stora account.
-2. **vmcopy.sh** - vmcopy.sh is based on the vhdcopy.sh but does a lot more than that. you can use vmcopy.sh to copy VMs from one subscription to another, one region to another, change the vnets/subnets among others.
+2. **vmcopy.sh** - vmcopy.sh is based on the vhdcopy.sh but does a lot more than that. you can use vmcopy.sh to copy VMs from one subscription to another, one region to another, move it to a new availability set, change the vnets/subnets among others.
 3. **vmalerts.sh** - vmalerts.sh helps you set up alerts for all VMs under the current subscription to send out an email when CPU or memory consumption goes beyond the threshold percentages.
+4. **deprovisionvm.sh** - deprovisionvm.sh builds upon the work that was done with vmcopy.sh and takes it to the next level where it now makes a temporary copy of the VM, deprovisions it using custom script and finally, captures the VM for you to use as a generalized image for your production deployments.
 
 #Prerequisites
 + Install [**Azure CLI**] (https://azure.microsoft.com/en-us/documentation/articles/xplat-cli-install/) and the awesome command-line JSON processor [**jq**] (https://stedolan.github.io/jq/)
@@ -53,7 +54,7 @@ Do this for every blob you need to copy and that's all - sit back and relax!
 This script use the Azure CLI commands along with the JQ command line tools to do the following -
 
 1. Determine the resource group information for the source and target storage accounts
-2. Create a storage account the target subscription. If no storage account was provided on the command line, it creates a new storage account with a prefix to the name of the storage account in the source subscription - **new**. A resource group is also created in the target subscription in the same manner. The location of these resources is set to same as the location information in the source subscription.
+2. Create a storage account the target subscription. If no storage account was provided on the command line, it creates a new storage account with **new** as a prefix to the name of the storage account. A resource group is also created in the target subscription in the same fashion. The location of these resources is set to same as the location information in the source subscription.
 3. Determine if the source container/blob exists
 4. Verify the presence of target container and create if not already present
 5. Finally, copy the blob to the target subscription
@@ -63,16 +64,17 @@ This script use the Azure CLI commands along with the JQ command line tools to d
 The vmcopy.sh script is based on the vhdcopy.sh script but allows you to do the following -
 + Clone a VM from one subscription to another subscription
 + Clone a VM in the same subscription (in the same location or a new one)
-+ Clone your VMs from one region to another region
-+ Clone a VM in a new VNET/Subnet of your choice
++ Move your VMs from one region to another region
++ Move a VM in a new VNET/Subnet of your choice
++ Move VM to an availability set if not done earlier
 
-Please keep in mind that the term **cloning** is used all over here since all these operations are performed on the VMs without the need to generalized the VMs in the first place.
+Please keep in mind that the term **cloning** is used all over here since all these operations are performed on the VMs without the need to generalized the VMs in the first place so the resulting VM contains all the changes, software and configuration as the source VM.
 
 The vmcopy.sh script needs 4 mandatory parameters -
 + Source subscription id
 + Target subscription id - this can be same as the source subscription id if you wish to make a copy of the VM in the same subscription
-+ Resource group name
-+ VM name
++ Source Resource group name
++ The VM name to clone
 
 Syntax:
 
@@ -138,5 +140,25 @@ metricname="\Memory\% Committed Bytes In Use"
 ```
 
 The script, at the moment, looks for all the VMs and sets up alerts for them. Work to specify individual resource groups and/or VMs is going on - as time permits, I'll add those options.
+
+# deprovisionvm.sh
+
+The syntax for deprovisionvm.sh script is as following -
+
+```bash
+./deprovisionvm.sh <source subscription id> <target subscription id> <target vm location> <source resource group> <source vm name>
+```
+
+This syntax copies the VHD of the source VM specified on the command line to a new resource group in the target subscription. It creates a new storage account prefixed with imagestore; followed by the source storage account name and a container with the same name as the source container. It, then, builds VM using this blob. Once the VM has been provisioned, the custom script extension is used to deploy the generalize.sh (in the same repository here) on the VM. The generalize.sh script creates a temporary script which is then executed via a cron job at the next minute. The cron job is removed immediately as not to cause problem later. The delay to make sure the Custom Script extension is installed and finished before WAAgent running on the VM is deprovisioned. The main script now waits for the VM to shutdown since the cron job shuts down the VM after  running the deprovisioning command.
+
+As the VM shuts down, deprovisionvm.sh now deallocates, marks the VM as generalized and then captures the VHD for use with your custom image deployment requirements. The captured VHD is found at <target storage account>/system/Microsoft.Compute/Images/vhds/ marked with today's date for easier identification.
+
+As with the vmcopy.sh script, it takes the following parameters to make things as flexible as possible -
+
+```bash
+./deprovisionvm.sh <source subscription id> <target subscription id> <target vm location> <source resource group> <source vm name> <target resource group> <target vm name>
+```
+
+If you wish to make a copy of the VM in the same resource group as the soure VM, keep the 5th command line argument same as the 3rd one.
 
 **Disclaimer**: The scripts is provided as is and suitability for any purpose is not guaranteed - please test it thoroughly and modify as per your requirements.
